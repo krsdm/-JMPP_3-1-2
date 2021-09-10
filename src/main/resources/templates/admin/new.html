@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New User</title>
+</head>
+<body>
+
+    <h1>New User</h1>
+
+    <a href="/"><button><strong>Home</strong></button></a>
+    <a href="/admin"><button><strong>All Users</strong></button></a>
+    <a href="/logout"><button><strong>Logout</strong></button></a>
+
+    <form th:method="POST" th:action="@{/admin/new}" th:object="${user}">
+        <p>
+            <label for="name">Name</label><br/>
+            <input type="text" th:field="*{name}" id="name"/>
+            <label style="color:red" th:if="${#fields.hasErrors('name')}" th:utext="${#fields.errors('name').get(0)}">Name Error</label>
+        </p>
+        <p>
+            <label for="surname">Surname</label><br/>
+            <input type="text" th:field="*{surname}" id="surname"/>
+        </p>
+        <p>
+            <label for="password">Password</label><br/>
+            <input type="password" th:field="*{password}" id="password"/>
+            <label style="color:red" th:if="${#fields.hasErrors('password')}" th:utext="${#fields.errors('password').get(0)}">Pass Error</label>
+        </p>
+        <p>
+            <label for="age">Age</label><br/>
+            <input type="text" th:field="*{age}" id="age"/>
+            <label style="color:red" th:if="${#fields.hasErrors('age')}">Min 14, max 127 years</label>
+        </p>
+        <p>
+            <label for="email">Email</label><br/>
+            <input type="text" th:field="*{email}" id="email"/>
+            <label style="color:red" th:if="${#fields.hasErrors('email')}" th:utext="${#fields.errors('email').get(0)}">Email Error</label>
+        </p>
+        <p>
+            <th:block th:each="role: ${roles}">
+                <input type=checkbox name=roles th:value="${role.getName()}" th:checked="${user.getRoles().contains(role)}"/>
+                <label th:text="${role.nameNoPrefix()}"></label><br/>
+            </th:block>
+            <label style="color:red" th:if="${#fields.hasErrors('roles')}" th:utext="${#fields.errors('roles').get(0)}">Roles Error</label>
+        </p>
+        <p>
+            <button type="submit"><strong>Create User</strong></button>
+        </p>
+    </form>
+
+</body>
+</html>

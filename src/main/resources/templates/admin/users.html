@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User List</title>
+</head>
+<body>
+
+  <h1>User List</h1>
+
+  <p>
+    <a href="/"><button><strong>Home</strong></button></a>
+    <a href="/admin/new"><button><strong>Add New User</strong></button></a>
+    <a href="/logout"><button><strong>Logout</strong></button></a>
+  </p>
+
+  <table border="1" cellpadding="15" cellspacing="0">
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Email</th>
+      <th>Roles</th>
+      <th>Actions</th>
+    </tr>
+    <tr th:each="user, state: ${users}" align="center">
+      <td th:text="${state.index + 1}"></td>
+      <td>
+        <a th:href="@{/admin/{id}(id = ${user.getId()})}">
+          <span th:text="${user.getName()}"></span>
+          <span th:text="${user.getSurname()}"></span>
+        </a>
+      </td>
+      <td th:text="${user.getAge()}"></td>
+      <td th:text="${user.getEmail()}"></td>
+      <td>
+        <span th:each="role: ${user.getRoles()}">
+          <div th:text="${role.nameNoPrefix()}"></div>
+        </span>
+      </td>
+      <td>
+        <a th:href="@{/admin/{id}/edit(id=${user.getId()})}" style="float: left">
+          <button>edit</button>
+        </a>
+        <form th:method="DELETE" th:action="@{/admin/{id}(id=${user.getId()})}" style="float: left; margin-left: 15px">
+          <input type="submit" value="delete"/>
+        </form>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

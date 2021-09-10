@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome</title>
+</head>
+<body>
+    <h2 th:text="'Welcome, ' + ${userName} + '!'"></h2>
+
+
+    <a href="/user" sec:authorize="hasAnyRole('ROLE_ADMIN', 'ROLE_USER')"><button><strong>Profile</strong></button></a>
+    <a href="/admin" sec:authorize="hasRole('ROLE_ADMIN')"><button><strong>Admin Panel</strong></button></a>
+    <a href="/logout"><button ><strong>Logout</strong></button></a>
+</body>
+</html>

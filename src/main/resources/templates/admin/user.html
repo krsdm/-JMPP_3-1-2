@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+</head>
+<body>
+
+    <h1>User Profile</h1>
+
+    <p>
+        <a href="/"><button><strong>Home</strong></button></a>
+        <a href="/admin" sec:authorize="hasRole('ROLE_ADMIN')"><button><strong>All Users</strong></button></a>
+        <a href="/logout"><button><strong>Logout</strong></button></a>
+    </p>
+
+    <table border="1" cellpadding="15" cellspacing="0">
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Email</th>
+            <th>Roles</th>
+        </tr>
+        <tr align="center">
+            <td th:text="${user.getId()}"></td>
+            <td>
+                <span th:text="${user.getName()}"></span>
+                <span th:text="${user.getSurname()}"></span>
+            </td>
+            <td th:text="${user.getAge()}"></td>
+            <td th:text="${user.getEmail()}"></td>
+            <td>
+                <span th:each="role: ${user.getRoles()}">
+                  <div th:text="${role.nameNoPrefix()}"></div>
+                </span>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

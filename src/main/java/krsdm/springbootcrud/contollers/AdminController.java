@@ -4,7 +4,7 @@ import krsdm.springbootcrud.models.User;
 import krsdm.springbootcrud.service.RoleService;
 import krsdm.springbootcrud.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,74 +27,58 @@ public class AdminController {
     }
 
     @GetMapping
-    public String userList(Model model) {
+    public String userList(@AuthenticationPrincipal User activeUser, Model model) {
+        model.addAttribute("roles", roleService.getRoles());
+        model.addAttribute("user", activeUser);
         model.addAttribute("users", userService.getAllUsers());
-        return "admin/users";
-    }
-
-    @GetMapping("{id}")
-    public String showUser(@PathVariable("id") long id, Model model) {
-        model.addAttribute("user", userService.getUserById(id));
-        return "admin/user";
+        return "admin/admin";
     }
 
     @GetMapping("new")
-    public String newUser(Model model) {
+    public String newUser(@AuthenticationPrincipal User activeUser, Model model) {
+        model.addAttribute("user", activeUser);
         model.addAttribute("roles", roleService.getRoles());
-        model.addAttribute("user", new User());
+        model.addAttribute("newuser", new User());
         return "admin/new";
     }
 
     @PostMapping("new")
-    public String createUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult, Model model) {
-
-        // Если есть ошибки, попросим исправить
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("roles", roleService.getRoles());
-            return "admin/new";
-        }
+    public String createUser(@AuthenticationPrincipal User activeUser,
+                             @ModelAttribute("newuser") @Valid User newuser,
+                             BindingResult bindingResult, Model model) {
 
         // Если юзер с таким именем уже существует, сообщим об этом
-        if (userService.getUserByName(user.getName()) != null) {
-            bindingResult.addError(new FieldError("name", "name",
-                    String.format("User with name \"%s\" is already exist!", user.getName())));
+        if (userService.getUserByName(newuser.getName()) != null) {
+            bindingResult.addError(new FieldError("newuser", "name",
+                    String.format("User with first name \"%s\" is already exist!", newuser.getName())));
             model.addAttribute("roles", roleService.getRoles());
+            model.addAttribute("user", activeUser);
             return "admin/new";
         }
 
         // Иначе достаем для юзера по указанным именам роли из базы и сохраняем
-        user.setRoles(user.getRoles().stream()
+        newuser.setRoles(newuser.getRoles().stream()
                 .map(role -> roleService.getByName(role.getName()))
                 .collect(Collectors.toSet()));
-        userService.saveUser(user);
+        userService.saveUser(newuser);
         return "redirect:/admin";
     }
 
-    @GetMapping("{id}/edit")
-    public String editUser(@PathVariable("id") long id, Model model) {
-        model.addAttribute("user", userService.getUserById(id));
-        model.addAttribute("roles", roleService.getRoles());
-        return "admin/edit";
-    }
-
     @PatchMapping("{id}/edit")
-    public String updateUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult, Model model) {
+    public String updateUser(@AuthenticationPrincipal User activeUser,
+                             @ModelAttribute("user") User user, Model model) {
 
-        // Если есть ошибки, попросим исправить
-        if (bindingResult.hasErrors()) {
+        // если имя было изменено и юзер с таким именем уже существует, сообщим об этом
+        if (!user.getName().equals(userService.getUserById(user.getId()).getName()) &&
+                userService.getUserByName(user.getName()) != null) {
+            model.addAttribute("usernameError", String.format("User with first name \"%s\" is already exist!", user.getName()));
             model.addAttribute("roles", roleService.getRoles());
-            return "admin/edit";
+            model.addAttribute("users", userService.getAllUsers());
+            model.addAttribute("user", activeUser);
+            return "admin/admin";
         }
 
-        // Если изменили имя и юзер с таким именем уже существует, сообщим об этом
-        if (!user.getName().equals(userService.getUserById(user.getId()).getName()) && userService.getUserByName(user.getName()) != null) {
-            bindingResult.addError(new FieldError("name", "name",
-                    String.format("User with name \"%s\" is already exist!", user.getName())));
-            model.addAttribute("roles", roleService.getRoles());
-            return "admin/edit";
-        }
-
-        // Иначе достаем для юзера по указанным именам роли из базы и сохраняем
+        // иначе достаем для юзера по указанным именам роли из базы и сохраняем
         user.setRoles(user.getRoles().stream()
                 .map(role -> roleService.getByName(role.getName()))
                 .collect(Collectors.toSet()));
@@ -103,8 +87,13 @@ public class AdminController {
     }
 
     @DeleteMapping("{id}")
-    public String deleteUser(@PathVariable("id") long id) {
+    public String deleteUser(@AuthenticationPrincipal User activeUser, @PathVariable("id") long id) {
         userService.removeUser(id);
+        // если admin удалил сам себя, нужно его разлогинить
+        if (id == activeUser.getId()) {
+            return "redirect:/logout";
+        }
         return "redirect:/admin";
     }
+
 }

@@ -1,53 +1,108 @@
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" class="h-100"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" th:href="@{/img/favicon.ico}"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <title>New User</title>
 </head>
-<body>
+<body class="h-100">
 
-    <h1>New User</h1>
+  <th:block th:insert="admin/admin :: navbar"></th:block>
 
-    <a href="/"><button><strong>Home</strong></button></a>
-    <a href="/admin"><button><strong>All Users</strong></button></a>
-    <a href="/logout"><button><strong>Logout</strong></button></a>
+<div class="container-fluid h-100">
+  <div class="row h-100">
 
-    <form th:method="POST" th:action="@{/admin/new}" th:object="${user}">
-        <p>
-            <label for="name">Name</label><br/>
-            <input type="text" th:field="*{name}" id="name"/>
-            <label style="color:red" th:if="${#fields.hasErrors('name')}" th:utext="${#fields.errors('name').get(0)}">Name Error</label>
-        </p>
-        <p>
-            <label for="surname">Surname</label><br/>
-            <input type="text" th:field="*{surname}" id="surname"/>
-        </p>
-        <p>
-            <label for="password">Password</label><br/>
-            <input type="password" th:field="*{password}" id="password"/>
-            <label style="color:red" th:if="${#fields.hasErrors('password')}" th:utext="${#fields.errors('password').get(0)}">Pass Error</label>
-        </p>
-        <p>
-            <label for="age">Age</label><br/>
-            <input type="text" th:field="*{age}" id="age"/>
-            <label style="color:red" th:if="${#fields.hasErrors('age')}">Min 14, max 127 years</label>
-        </p>
-        <p>
-            <label for="email">Email</label><br/>
-            <input type="text" th:field="*{email}" id="email"/>
-            <label style="color:red" th:if="${#fields.hasErrors('email')}" th:utext="${#fields.errors('email').get(0)}">Email Error</label>
-        </p>
-        <p>
-            <th:block th:each="role: ${roles}">
-                <input type=checkbox name=roles th:value="${role.getName()}" th:checked="${user.getRoles().contains(role)}"/>
-                <label th:text="${role.nameNoPrefix()}"></label><br/>
-            </th:block>
-            <label style="color:red" th:if="${#fields.hasErrors('roles')}" th:utext="${#fields.errors('roles').get(0)}">Roles Error</label>
-        </p>
-        <p>
-            <button type="submit"><strong>Create User</strong></button>
-        </p>
-    </form>
+    <th:block th:insert="admin/admin :: sidebar"></th:block>
 
+    <!--    Main block begin    -->
+    <div class="p-0 col-10 bg-light">
+      <div class="tabs p-4">
+        <h1 class="pb-2">Admin panel</h1>
+        <ul class="nav nav-tabs">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin">Users Table</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="new.html">New User</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="characteristics">
+            <div class="p-3 border">
+              <h5 class="my-0 mx-2">Add New User</h5>
+            </div>
+            <div class="p-3 bg-white border border-top-0">
+              <div class="newForm">
+
+                <!--    new user form begin    -->
+                <form id="newUserForm" method="POST" th:object="${newuser}">
+                  <div class="alert alert-danger" role="alert" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                  <div class="wrapper d-flex flex-column align-items-center font-weight-bold">
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <label for="name" class="col-form-label">First Name</label>
+                      <small id="nameHelp" class="form-text text-muted">3-20 characters, only letters</small>
+                      <input type="text" th:field="*{name}" class="form-control form-control-sm" id="name" name="name" pattern="[A-zА-я]{3,20}" required>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <label for="surname" class="col-form-label">Last Name</label>
+                      <small id="surnameHelp" class="form-text text-muted">0-20 characters, only letters</small>
+                      <input type="text" th:field="*{surname}" class="form-control form-control-sm" id="surname" name="surname" pattern="[A-zА-я]{3,20}">
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <label for="age" class="col-form-label">Age</label>
+                      <small id="ageHelp" class="form-text text-muted">Min 14, max 120 years</small>
+                      <input type="number" th:field="*{age}" class="form-control form-control-sm" id="age" name="age" min="14" max="120" required>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <label for="email" class="col-form-label">Email</label>
+                      <small id="emailHelp" class="form-text text-muted">Example name@mail.com</small>
+                      <input type="email" th:field="*{email}" class="form-control form-control-sm" id="email" name="email" required>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <label for="password" class="col-form-label">Password</label>
+                      <small id="passHelp" class="form-text text-muted">Min 3, max 60 any characters</small>
+                      <input type="password" th:field="*{password}" class="form-control form-control-sm" id="password" name="password" pattern="\S{3,60}$" required>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <label for="roles">Role</label>
+                      <select multiple class="form-control form-control-sm" id="roles" name="roles" size="2" required>
+                        <option th:each="role: ${roles}" th:value="${role.getName()}" th:selected="${newuser.getRoles().contains(role)}">
+                          <th:block th:text="${role.nameNoPrefix()}"></th:block>
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="d-flex flex-column align-items-center form-group col-4">
+                      <button type="submit" class="btn btn-success">Add new user</button>
+                    </div>
+                  </div>
+                </form>
+                <!--    new user form end    -->
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--    Main block end    -->
+
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 </html>
